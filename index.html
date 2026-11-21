@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RANDOM GUNNY — 3D Weapon Randomizer Shooter</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Cpolygon points=%2750,2 95,50 50,98 5,50%27 fill=%27%23ff7a1a%27/%3E%3Ctext x=%2750%27 y=%2768%27 font-size=%2748%27 text-anchor=%27middle%27 fill=%27%23120a00%27 font-family=%27Arial Black%27%3ERG%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+<div id="app">
+  <canvas id="game-canvas"></canvas>
+
+  <!-- ══════════ IN-GAME HUD ══════════ -->
+  <div id="hud" class="screen hidden">
+    <div id="crosshair"><span class="ch ch-t"></span><span class="ch ch-b"></span><span class="ch ch-l"></span><span class="ch ch-r"></span><span class="ch-dot"></span></div>
+    <div id="hitmarker"><span></span><span></span><span></span><span></span></div>
+
+    <div id="hud-tl">
+      <div id="hud-mode">RANDO ARENA</div>
+      <div id="hud-objective">Elimine os oponentes</div>
+    </div>
+
+    <div id="hud-timer">05:00</div>
+    <div id="hud-score-teams" class="hidden">
+      <div class="team team-ally"><b id="score-ally">0</b><i>ALIADO</i></div>
+      <div class="team-sep">:</div>
+      <div class="team team-enemy"><i>INIMIGO</i><b id="score-enemy">0</b></div>
+    </div>
+
+    <div id="hud-tr">
+      <div id="killfeed"></div>
+    </div>
+
+    <div id="hud-bl">
+      <div id="hp-row">
+        <div id="hp-icon">+</div>
+        <div id="hp-bar-wrap"><div id="hp-bar"></div></div>
+        <div id="hp-num">100</div>
+      </div>
+      <div id="lives-row" class="hidden"></div>
+      <div id="streak-row"><span id="kill-streak"></span></div>
+    </div>
+
+    <div id="hud-br">
+      <div id="weapon-class">PISTOLA</div>
+      <div id="weapon-name">M1911</div>
+      <div id="ammo-row"><span id="ammo-mag">7</span><span id="ammo-sep">/</span><span id="ammo-reserve">∞</span></div>
+      <div id="reload-hint" class="hidden">R — RECARREGAR</div>
+    </div>
+
+    <div id="hud-bc">
+      <div class="rando-chip hidden" id="chip-kill">⟳ RANDOM POR ABATE</div>
+      <div class="rando-chip hidden" id="chip-timer">⟳ AUTO 15s</div>
+      <div class="rando-chip hidden" id="chip-manual">G — RANDOMIZAR</div>
+      <div class="rando-chip hidden" id="chip-pool">POOL: TOTAL</div>
+    </div>
+
+    <div id="banner" class="hidden"><div id="banner-title"></div><div id="banner-sub"></div></div>
+    <div id="toast" class="hidden"></div>
+    <div id="wave-progress" class="hidden"><div id="wave-label">ONDA 1</div><div id="wave-bar-wrap"><div id="wave-bar"></div></div></div>
+
+    <div id="vignette-damage"></div>
+    <div id="scope-overlay" class="hidden"><div class="scope-ring"></div><div class="scope-cross-h"></div><div class="scope-cross-v"></div></div>
+    <div id="fader"></div>
+
+    <div id="scoreboard" class="hidden">
+      <div class="sb-title">PLACAR</div>
+      <div id="scoreboard-rows"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ MAIN MENU ══════════ -->
+  <div id="menu" class="screen">
+    <div class="menu-left">
+      <div class="brand-tag">// ARSENAL IMPREVISÍVEL</div>
+      <h1 class="game-title">RANDOM<br><span>GUNNY</span></h1>
+      <div class="game-sub">3D WEAPON RANDOMIZER SHOOTER</div>
+      <div class="menu-buttons">
+        <button class="btn btn-primary" id="btn-play"><span class="btn-key">▶</span> JOGAR<small>RANDO ARENA — aleatório a cada abate</small></button>
+        <button class="btn btn-ghost" id="btn-modes"><span class="btn-key">▦</span> MODOS DE JOGO<small>8 modos · Free For All · TDM · Sobrevivência…</small></button>
+        <button class="btn btn-ghost" id="btn-settings"><span class="btn-key">⚙</span> CONFIGURAÇÕES<small>Mouse · Randomizer · Dificuldade · Áudio</small></button>
+        <button class="btn btn-ghost" id="btn-howto"><span class="btn-key">?</span> COMO JOGAR<small>Controles e regras do Randomizer</small></button>
+      </div>
+      <div class="menu-footer">v1.0 · Single-player vs Bots · 22 armas únicas</div>
+    </div>
+    <div class="menu-right">
+      <div id="showcase-card">
+        <div class="sc-tag">ARMA EM DESTAQUE</div>
+        <div class="sc-name" id="showcase-name">M1911</div>
+        <div class="sc-class" id="showcase-class">PISTOLA</div>
+      </div>
+    </div>
+    <div class="scanlines"></div>
+  </div>
+
+  <!-- ══════════ MODE SELECT ══════════ -->
+  <div id="mode-select" class="screen hidden">
+    <div class="panel wide">
+      <div class="panel-head">
+        <button class="btn-back" id="modes-back">← VOLTAR</button>
+        <h2>MODOS DE JOGO</h2>
+        <div class="panel-accent"></div>
+      </div>
+      <div id="mode-grid"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ SETTINGS ══════════ -->
+  <div id="settings-screen" class="screen hidden">
+    <div class="panel wide settings-panel">
+      <div class="panel-head">
+        <button class="btn-back" id="settings-back">← VOLTAR</button>
+        <h2>CONFIGURAÇÕES</h2>
+        <div class="panel-accent"></div>
+      </div>
+      <div class="settings-cols">
+        <div class="settings-col">
+          <h3>SENSIBILIDADE &amp; CÂMERA</h3>
+          <label class="set-row"><span>Sensibilidade do mouse</span><input type="range" id="set-sens" min="0.3" max="3" step="0.05"><b id="set-sens-val">1.00</b></label>
+          <label class="set-row"><span>Campo de visão (FOV)</span><input type="range" id="set-fov" min="70" max="100" step="1"><b id="set-fov-val">80</b></label>
+          <label class="set-row"><span>Câmera padrão</span>
+            <div class="seg" id="set-cam"><button data-v="fps" class="on">1ª PESSOA</button><button data-v="tps">3ª PESSOA</button></div>
+          </label>
+          <label class="set-row"><span>Volume geral</span><input type="range" id="set-vol" min="0" max="100" step="1"><b id="set-vol-val">80</b></label>
+          <label class="set-row"><span>Dificuldade dos bots</span>
+            <div class="seg" id="set-diff"><button data-v="easy">FÁCIL</button><button data-v="normal" class="on">NORMAL</button><button data-v="hard">VETERANO</button></div>
+          </label>
+        </div>
+        <div class="settings-col">
+          <h3>SISTEMA RANDOMIZER</h3>
+          <label class="set-row switch-row"><span>Randomizer ativado</span><button class="switch on" id="set-rando-enabled" role="switch"></button></label>
+          <label class="set-row switch-row"><span>Trocar arma ao eliminar</span><button class="switch on" id="set-rando-kill" role="switch"></button></label>
+          <label class="set-row switch-row"><span>Randomização por tempo</span><button class="switch" id="set-rando-timer-on" role="switch"></button></label>
+          <label class="set-row"><span>Intervalo automático</span>
+            <div class="seg" id="set-rando-interval"><button data-v="10">10s</button><button data-v="15" class="on">15s</button><button data-v="20">20s</button><button data-v="30">30s</button><button data-v="45">45s</button></div>
+          </label>
+          <label class="set-row switch-row"><span>Randomizar entre rodadas</span><button class="switch on" id="set-rando-round" role="switch"></button></label>
+          <label class="set-row"><span>Pool de armas</span>
+            <div class="seg" id="set-pool"><button data-v="all" class="on">TOTAL</button><button data-v="gun">SÓ FOGO</button><button data-v="melee">SÓ CORPO A CORPO</button></div>
+          </label>
+          <h3 style="margin-top:18px">EQUILÍBRIO</h3>
+          <label class="set-row"><span>Dano à I.A. inimiga</span><input type="range" id="set-dmg" min="50" max="150" step="5"><b id="set-dmg-val">100%</b></label>
+          <p class="set-note">As regras do Randomizer podem ser substituídas pelo modo escolhido (ex.: SÓ CORPO A CORPO força pool melee).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ HOW TO PLAY ══════════ -->
+  <div id="howto-screen" class="screen hidden">
+    <div class="panel">
+      <div class="panel-head">
+        <button class="btn-back" id="howto-back">← VOLTAR</button>
+        <h2>COMO JOGAR</h2>
+        <div class="panel-accent"></div>
+      </div>
+      <div class="howto-body">
+        <div class="howto-col">
+          <h3>CONTROLES</h3>
+          <ul class="keys">
+            <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Mover</li>
+            <li><kbd>SHIFT</kbd> Correr</li>
+            <li><kbd>ESPAÇO</kbd> Pular</li>
+            <li><kbd>CTRL</kbd> / <kbd>C</kbd> Agachar</li>
+            <li><kbd>MOUSE</kbd> Mirar câmera</li>
+            <li><kbd>BOTÃO ESQ.</kbd> Atirar / Ataque leve</li>
+            <li><kbd>BOTÃO DIR.</kbd> Mirar (ADS) / Ataque pesado</li>
+            <li><kbd>R</kbd> Recarregar</li>
+            <li><kbd>F</kbd> 1ª / 3ª pessoa</li>
+            <li><kbd>TAB</kbd> Placar (segurar)</li>
+            <li><kbd>ESC</kbd> Pausar</li>
+          </ul>
+        </div>
+        <div class="howto-col">
+          <h3>O RANDOMIZER</h3>
+          <ul class="keys">
+            <li><kbd>G</kbd> Randomizar arma (qualquer)</li>
+            <li><kbd>Z</kbd> Randomizar arma de fogo</li>
+            <li><kbd>X</kbd> Randomizar corpo a corpo</li>
+          </ul>
+          <p class="howto-text">O <b>Randomizer</b> troca o jogador de arma de formas configuráveis: a cada abate, em intervalos de tempo, entre rodadas — ou na tecla G. Armas de fogo e corpo a corpo podem ser sorteadas separadamente. Cada arma tem modelo 3D, animações, sons, dano, alcance e cadência próprios. Ajuste tudo em <b>Configurações → Sistema Randomizer</b>.</p>
+          <h3>MODOS</h3>
+          <p class="howto-text">8 modos single-player contra bots: RANDO Arena, Free For All, Team Deathmatch, Eliminação, Sobrevivência, Só Armas de Fogo, Só Corpo a Corpo e Arena Total. Cada modo traz suas próprias regras — experimente todos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PAUSE ══════════ -->
+  <div id="pause-screen" class="screen hidden">
+    <div class="panel pause-panel">
+      <div class="panel-head"><h2>PAUSADO</h2><div class="panel-accent"></div></div>
+      <div class="pause-buttons">
+        <button class="btn btn-primary" id="btn-resume"><span class="btn-key">▶</span> CONTINUAR</button>
+        <button class="btn btn-ghost" id="btn-restart"><span class="btn-key">↻</span> REINICIAR PARTIDA</button>
+        <button class="btn btn-ghost" id="btn-pause-settings"><span class="btn-key">⚙</span> CONFIGURAÇÕES</button>
+        <button class="btn btn-danger" id="btn-quit"><span class="btn-key">✕</span> ABANDONAR PARTIDA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ END SCREEN ══════════ -->
+  <div id="end-screen" class="screen hidden">
+    <div class="panel end-panel">
+      <div id="end-result">VITÓRIA</div>
+      <div id="end-mode">RANDO ARENA</div>
+      <div class="end-stats">
+        <div class="estat"><b id="es-kills">0</b><span>ABATES</span></div>
+        <div class="estat"><b id="es-deaths">0</b><span>MORTES</span></div>
+        <div class="estat"><b id="es-streak">0</b><span>MELHOR SEQUÊNCIA</span></div>
+        <div class="estat"><b id="es-score">0</b><span>PONTOS</span></div>
+      </div>
+      <div class="pause-buttons">
+        <button class="btn btn-primary" id="btn-again"><span class="btn-key">↻</span> JOGAR NOVAMENTE</button>
+        <button class="btn btn-ghost" id="btn-end-menu"><span class="btn-key">⌂</span> MENU PRINCIPAL</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="click-to-play" class="hidden"><div class="ctp-inner"><div class="ctp-big">CLIQUE PARA JOGAR</div><div class="ctp-sub">o mouse será capturado · ESC para pausar</div></div></div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

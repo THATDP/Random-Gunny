@@ -1,0 +1,21 @@
+{
+  "name": "random-gunny",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Random Gunny \u2014 3D Weapon Randomizer Shooter",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node scripts/smoke-test.mjs",
+    "lint": "eslint src/*.js"
+  },
+  "devDependencies": {
+    "eslint": "^10.15.0",
+    "vite": "^5.4.0"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  }
+}
