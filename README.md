@@ -1,5 +1,7 @@
 # RANDOM GUNNY 🎲🔫
 
+https://thatdp.github.io/Random-Gunny/
+
 **3D Weapon Randomizer Shooter** — atire (ou esfaqueie) com armas sorteadas. Inspirado no Randomizer do Roblox.
 
 ## Rode agora
